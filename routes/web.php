@@ -11,18 +11,13 @@
 |
 */
 
-Route::get('/', function () {
-    return view('pages.home');
-});
+Route::get('/', 'GuestController@index')->name('home');
 
-Route::get('/masuk', function () {
-    return view('pages.login');
-});
+Route::get('/masuk', 'GuestController@loginIndex')->name('signIn');
 
-Route::get('/rincian-kegiatan', function () {
-    return view('pages.activity');
-});
+Route::get('/rincian-kegiatan', 'ActivityController@activityView')->name('activity')->middleware('auth');
+Route::get('/tambah-kegiatan', 'ActivityController@manageActivityView')->name('manageActivity')->middleware(['auth','admin']);
+Route::post('/tambah-kegiatan', 'ActivityController@create')->name('createActivity')->middleware(['auth','admin']);
 
-Route::get('/tambah-kegiatan', function () {
-    return view('pages.manageActivity');
-});
+Auth::routes();
+
