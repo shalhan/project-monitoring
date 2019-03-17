@@ -49,7 +49,7 @@ class Activity extends Model
             $color = $activity->isLecture ? '#f39c12' : 'grey';
             $combined = $data->combine([$activity->id, $activity->name, $activity->from, $activity->to, $color, $color, $activity->isLecture ]);
             $result->push($combined);
-            if(isset($activity->notes)) {
+            if(Auth::check() && isset($activity->notes) && $activity->isLecture) {
                 foreach($activity->notes as $n) {
                     $color = Auth::user()->id === $n->created_by ? '#27ae60' : '#3498db';
                     $title = Auth::user()->id === $n->created_by ? $n->name . ' (Yours)' : $n->name;
