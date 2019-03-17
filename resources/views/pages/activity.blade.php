@@ -1,5 +1,42 @@
 @extends('master')
 
+@push('style')
+<link rel="stylesheet" href="plugins/timepicker/bootstrap-timepicker.min.css">
+<link rel="stylesheet" href="bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css">
+<link rel="stylesheet" href="bower_components/select2/dist/css/select2.min.css">
+@endpush
+
+@push('script')
+<script src="plugins/timepicker/bootstrap-timepicker.min.js"></script>
+<script src="bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
+<script>
+  $(function () {
+    // $('#scheduleFrom').daterangepicker()
+    // $('#schedule').daterangepicker({ timePicker: true, timePickerIncrement: 30, format: 'MM/DD/YYYY h:mm A' })
+    var today = new Date();
+    var dd = String(today.getDate()).padStart(2, '0');
+    var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    var yyyy = today.getFullYear();
+
+    today = mm + '/' + dd + '/' + yyyy;
+    $('#dateFrom').datepicker({
+      autoclose: true
+    }).val(today).datepicker('update');
+    //Timepicker
+    $('#timeFrom').timepicker({
+        showInputs: false
+    })
+    $('#dateTo').datepicker({
+      autoclose: true
+    }).val(today).datepicker('update');
+    //Timepicker
+    $('#timeTo').timepicker({
+        showInputs: false
+    })
+  })
+</script>
+@endpush
+
 @section('content')
 <section class="content-header">
     <h1>
@@ -14,8 +51,132 @@
 <!-- Main content -->
 <section class="content">
   <div class="row">
+      @if(Auth::check())
+      <div class="col-md-4">
+      <div class="box box-primary">
+          <div class="box-header with-border">
+              <h3 class="box-title">Catatan</h3>
+          </div>
+          <div class="box-body">
+          <table class="table table-bordered">
+                <tr>
+                  <th>Catatan</th>
+                  <th>Aktivitas</th>
+                  <th>Oleh</th>
+                  <th style="width: 40px">Aksi</th>
+                </tr>
+                @foreach($lectureNotes as $note)
+                <tr>
+                  <td>{{$note->name}}</td>
+                  <td>
+                    {{$note->activity->name}}
+                  </td>
+                  <td>
+                  {{$note->createdBy->name}}
+                  </td>
+                  <td class="text-center">
+                  @if($note->created_by === Auth::user()->id)
+                  <form action="/note/{{$note->id}}" method="post">
+                    @method('DELETE')
+                    @csrf
+                    <label for="deleteNote{{$note->id}}"><i class="fa fa-trash text-red"></i></label>
+                    <button class="btn btn-warning hidden" type="submit" id="deleteNote{{$note->id}}">Delete</button>
+                  </form>
+                  @endif
+                  </td>
+                </tr>
+                @endforeach
+              </table>
+          </div>
+
+        </div>
+        <div class="box box-primary">
+          <div class="box-header with-border">
+              <h3 class="box-title">Notes</h3>
+          </div>
+          <form role="form" action="{{route('createNote')}}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <div class="box-body">
+            <div class="form-group">
+                <label>Dari Aktivitas :</label>
+                <select class="form-control select2 {{ $errors->has('activity_id') ? ' is-invalid' : '' }}" name="activity_id" style="width: 100%;">
+                <option value="" selected disabled>Pilih aktivitas</option>
+                @foreach($result as $r)
+                @if($r['isLecture'])
+                <option value="{{$r['id']}}" {{old('activity_id') == $r['id'] ? 'selected' : ''}}>{{$r['title']}}</option>
+                @endif
+                @endforeach
+                </select>
+                @if ($errors->has('activity_id'))
+                    <span class="invalid-feedback" role="alert">
+                        <strong>{{ $errors->first('activity_id') }}</strong>
+                    </span>
+                @endif
+            </div>
+                <div class="form-group">
+                    <label for="name">Nama Notes</label>
+                    <input type="text" class="form-control {{ $errors->has('name') ? ' is-invalid' : '' }}" id="name" name="name" placeholder="Masukkan Nama Notes" value="{{old('name')}}" autocomplete="off">
+                    @if ($errors->has('name'))
+                        <span class="invalid-feedback" role="alert">
+                            <strong>{{ $errors->first('name') }}</strong>
+                        </span>
+                    @endif
+                </div>
+                <div class="form-group">
+                    <label>Dari Tanggal:</label>
+
+                    <div class="input-group">
+                        <div class="input-group-addon">
+                            <i class="fa fa-calendar"></i>
+                        </div>
+                        <input type="text" class="form-control pull-right {{ $errors->has('dateFrom') ? ' is-invalid' : '' }}" name="dateFrom" id="dateFrom" value="{{old('date')}}" autocomplete="off">
+                        <input type="text" class="form-control timepicker {{ $errors->has('timeFrom') ? ' is-invalid' : '' }}" name="timeFrom" id="timeFrom" value="{{old('time')}}" autocomplete="off">
+                    </div>
+                    @if ($errors->has('dateFrom'))
+                        <span class="invalid-feedback" role="alert">
+                            <strong>{{ $errors->first('dateFrom') }}</strong>
+                        </span>
+                    @endif
+                    @if ($errors->has('timeFrom'))
+                        <span class="invalid-feedback" role="alert">
+                            <strong>{{ $errors->first('timeFrom') }}</strong>
+                        </span>
+                    @endif
+                <!-- /.input group -->
+                </div>
+                <div class="form-group">
+                    <label>Sampai Tanggal:</label>
+
+                    <div class="input-group">
+                        <div class="input-group-addon">
+                            <i class="fa fa-calendar"></i>
+                        </div>
+                        <input type="text" class="form-control pull-right {{ $errors->has('dateTo') ? ' is-invalid' : '' }}" name="dateTo" id="dateTo" value="{{old('date')}}" autocomplete="off">
+                        <input type="text" class="form-control timepicker {{ $errors->has('timeTo') ? ' is-invalid' : '' }}" name="timeTo" id="timeTo" value="{{old('time')}}" autocomplete="off">
+                    </div>
+                    @if ($errors->has('dateTo'))
+                        <span class="invalid-feedback" role="alert">
+                            <strong>{{ $errors->first('dateTo') }}</strong>
+                        </span>
+                    @endif
+                    @if ($errors->has('timeTo'))
+                        <span class="invalid-feedback" role="alert">
+                            <strong>{{ $errors->first('timeTo') }}</strong>
+                        </span>
+                    @endif
+                <!-- /.input group -->
+                </div>
+            </div>
+            <div class="box-footer">
+            <button type="submit" class="btn btn-primary">Tambah</button>
+            </div>
+          </form>
+
+        </div>
+      </div>
+      @endif
       <!-- /.col -->
-      <div class="col-md-9">
+      <div class="col-md-8">
           <div class="box box-primary">
               <div class="box-body no-padding">
               <!-- THE CALENDAR -->
@@ -29,40 +190,13 @@
   </div>
 <!-- /.row -->
 </section>
-
-<div class="modal fade" id="modal-default">
-          <div class="modal-dialog">
-            <div class="modal-content">
-              <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title">Tambahkan Kegiatan</h4>
-              </div>
-              <div class="modal-body">
-              <form role="form" action="/rincian-kegiatan">
-                <div class="box-body">
-                    <div class="form-group">
-                        <label for="name">Nama Kegiatan</label>
-                        <input type="text" class="form-control" id="name" placeholder="Masukkan Kegiatan">
-                    </div>
-                </div>
-              </form>
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Tutup</button>
-                <button type="button" class="btn btn-primary">Simpan</button>
-              </div>
-            </div>
-            <!-- /.modal-content -->
-          </div>
-          <!-- /.modal-dialog -->
-        </div>
 @endsection
 
 @push("script")
+<script src="bower_components/select2/dist/js/select2.full.min.js"></script>
 <script>
   $(function () {
-
+    $('.select2').select2()
     /* initialize the external events
      -----------------------------------------------------------------*/
     function init_events(ele) {
@@ -97,9 +231,7 @@
         y    = date.getFullYear()
     $('#calendar').fullCalendar({
       eventClick: function(calEvent, jsEvent, view) {
-
         $("#modal-default").modal("show")
-
       },
       header    : {
         left  : 'prev,next today',

@@ -10,20 +10,19 @@ use Auth;
 class Activity extends Model
 {
     protected $appends = ['isLecture'];
-    protected $fillable = ['name', 'location', 'from', 'to', 'time', 'user_id', 'file'];
+    protected $fillable = ['name', 'location', 'from', 'to', 'user_id', 'file'];
 
     public function getAll() {
-        return $this->select('id', 'name', 'from', 'to', 'time')
-                    ->with('activityCommittees')
+        return $this->select('id', 'name', 'from', 'to')
+                    ->with(['activityCommittees', 'notes'])
                     ->get();
     }
 
     public function create($data) {
         $this->name = $data['name'];
         $this->location = $data['location'];
-        $this->from = $data['from'];
-        $this->to = $data['to'];
-        $this->time = $data['time'];
+        $this->from = $data['fromDateTime'];
+        $this->to = $data['toDateTime'];
         $this->save();
         //tambah panitia
         foreach($data['user_id'] as $id) {
@@ -44,12 +43,20 @@ class Activity extends Model
 
     public function getAllActivityCalendar() {
         $activities = $this->getAll();
-        $data = collect(['title', 'start', 'end', 'backgroundColor', 'borderColor']);
+        $data = collect(['id','title', 'start', 'end', 'backgroundColor', 'borderColor', 'isLecture']);
         $result = collect();
         foreach($activities as $activity) {
             $color = $activity->isLecture ? '#f39c12' : 'grey';
-            $combined = $data->combine([$activity->name, $activity->from, $activity->to, $color, $color ]);
+            $combined = $data->combine([$activity->id, $activity->name, $activity->from, $activity->to, $color, $color, $activity->isLecture ]);
             $result->push($combined);
+            if(isset($activity->notes)) {
+                foreach($activity->notes as $n) {
+                    $color = Auth::user()->id === $n->created_by ? '#27ae60' : '#3498db';
+                    $title = Auth::user()->id === $n->created_by ? $n->name . ' (Yours)' : $n->name;
+                    $combined  = $data->combine([$n->id, $title, $n->from, $n->to, $color, $color, false ]);
+                    $result->push($combined);
+                }
+            }
         }
         return $result;
     }
@@ -67,5 +74,9 @@ class Activity extends Model
                 return true;
         }
         return false;
+    }
+
+    public function notes() {
+        return $this->hasMany('App\Note');
     }
 }

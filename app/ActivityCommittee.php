@@ -15,4 +15,9 @@ class ActivityCommittee extends Model
     public function user() {
         return $this->belongsTo('App\User')->select('id', 'name', 'type_id');
     }
+
+    public function getByUserId($userId) {
+        return $this->where('user_id', $userId)
+                    ->get();
+    }
 }

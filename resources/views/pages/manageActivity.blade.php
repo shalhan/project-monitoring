@@ -3,7 +3,8 @@
 @push("style")
 <!-- daterange picker -->
 <link rel="stylesheet" href="plugins/timepicker/bootstrap-timepicker.min.css">
-<link rel="stylesheet" href="bower_components/bootstrap-daterangepicker/daterangepicker.css">
+<link rel="stylesheet" href="bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css">
+<!-- <link rel="stylesheet" href="bower_components/bootstrap-daterangepicker/daterangepicker.css"> -->
 <link rel="stylesheet" href="bower_components/select2/dist/css/select2.min.css">
 
 @endpush
@@ -58,37 +59,50 @@
                         </span>
                     @endif
                 </div>
+                
                 <div class="form-group">
-                    <label>Tanggal:</label>
+                    <label>Dari Tanggal:</label>
 
                     <div class="input-group">
                         <div class="input-group-addon">
-                        <i class="fa fa-calendar"></i>
+                            <i class="fa fa-calendar"></i>
                         </div>
-                        <input type="text" class="form-control pull-right {{ $errors->has('date') ? ' is-invalid' : '' }}" name="date" id="schedule" value="{{old('date')}}">
+                        <input type="text" class="form-control pull-right {{ $errors->has('dateFrom') ? ' is-invalid' : '' }}" name="dateFrom" id="dateFrom" value="{{old('date')}}" autocomplete="off">
+                        <input type="text" class="form-control timepicker {{ $errors->has('timeFrom') ? ' is-invalid' : '' }}" name="timeFrom" id="timeFrom" value="{{old('time')}}" autocomplete="off">
                     </div>
-                    @if ($errors->has('date'))
+                    @if ($errors->has('dateFrom'))
                         <span class="invalid-feedback" role="alert">
-                            <strong>{{ $errors->first('date') }}</strong>
+                            <strong>{{ $errors->first('dateFrom') }}</strong>
+                        </span>
+                    @endif
+                    @if ($errors->has('timeFrom'))
+                        <span class="invalid-feedback" role="alert">
+                            <strong>{{ $errors->first('timeFrom') }}</strong>
                         </span>
                     @endif
                 <!-- /.input group -->
                 </div>
                 <div class="form-group">
-                    <label>Waktu:</label>
+                    <label>Sampai Tanggal:</label>
 
                     <div class="input-group">
                         <div class="input-group-addon">
-                        <i class="fa fa-clock-o"></i>
+                            <i class="fa fa-calendar"></i>
                         </div>
-                        <input type="text" name="time" class="form-control timepicker {{ $errors->has('date') ? ' is-invalid' : '' }}" value="{{old('time')}}">
+                        <input type="text" class="form-control pull-right {{ $errors->has('dateTo') ? ' is-invalid' : '' }}" name="dateTo" id="dateTo" value="{{old('date')}}" autocomplete="off">
+                        <input type="text" class="form-control timepicker {{ $errors->has('timeTo') ? ' is-invalid' : '' }}" name="timeTo" id="timeTo" value="{{old('time')}}" autocomplete="off">
                     </div>
-                    @if ($errors->has('time'))
+                    @if ($errors->has('dateTo'))
                         <span class="invalid-feedback" role="alert">
-                            <strong>{{ $errors->first('time') }}</strong>
+                            <strong>{{ $errors->first('dateTo') }}</strong>
                         </span>
                     @endif
-                    <!-- /.input group -->
+                    @if ($errors->has('timeTo'))
+                        <span class="invalid-feedback" role="alert">
+                            <strong>{{ $errors->first('timeTo') }}</strong>
+                        </span>
+                    @endif
+                <!-- /.input group -->
                 </div>
                 <div class="form-group">
                     <label>Pilih Panitia :</label>
@@ -129,16 +143,31 @@
 @push("script")
 <script src="bower_components/select2/dist/js/select2.full.min.js"></script>
 <script src="plugins/timepicker/bootstrap-timepicker.min.js"></script>
-<script src="bower_components/bootstrap-daterangepicker/daterangepicker.js"></script>
+<script src="bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
+<!-- <script src="bower_components/bootstrap-daterangepicker/daterangepicker.js"></script> -->
 <script>
   $(function () {
     $('.select2').select2()
-
-    $('#schedule').daterangepicker()
+    // $('#scheduleFrom').daterangepicker()
     // $('#schedule').daterangepicker({ timePicker: true, timePickerIncrement: 30, format: 'MM/DD/YYYY h:mm A' })
+    var today = new Date();
+    var dd = String(today.getDate()).padStart(2, '0');
+    var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    var yyyy = today.getFullYear();
 
+    today = dd + '/' + mm + '/' + yyyy;
+    $('#dateFrom').datepicker({
+      autoclose: true
+    }).val(today).datepicker('update');
     //Timepicker
-    $('.timepicker').timepicker({
+    $('#timeFrom').timepicker({
+        showInputs: false
+    })
+    $('#dateTo').datepicker({
+      autoclose: true
+    }).val(today).datepicker('update');
+    //Timepicker
+    $('#timeTo').timepicker({
         showInputs: false
     })
   })

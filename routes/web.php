@@ -18,6 +18,8 @@ Route::get('/masuk', 'GuestController@loginIndex')->name('signIn');
 Route::get('/rincian-kegiatan', 'ActivityController@activityView')->name('activity')->middleware('auth');
 Route::get('/tambah-kegiatan', 'ActivityController@manageActivityView')->name('manageActivity')->middleware(['auth','admin']);
 Route::post('/tambah-kegiatan', 'ActivityController@create')->name('createActivity')->middleware(['auth','admin']);
+Route::post('/tambah-note', 'NoteController@create')->name('createNote')->middleware('auth');
+Route::delete('/note/{id}', 'NoteController@drop')->name('deleteNote')->middleware('auth');
 
 Auth::routes();
 
