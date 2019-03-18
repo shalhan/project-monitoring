@@ -51,7 +51,7 @@
 <!-- Main content -->
 <section class="content">
   <div class="row">
-      @if(Auth::check())
+      @if(Auth::check() && Auth::user()->type_id === Config::get('user.lecture_id'))
       <div class="col-md-4">
       <div class="box box-primary">
           <div class="box-header with-border">
