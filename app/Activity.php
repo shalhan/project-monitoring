@@ -14,7 +14,7 @@ class Activity extends Model
 
     public function getAll() {
         return $this->select('id', 'name', 'from', 'to')
-                    ->with(['activityCommittees', 'notes'])
+                    ->with('activityCommittees')
                     ->get();
     }
 
@@ -49,15 +49,17 @@ class Activity extends Model
             $color = $activity->isLecture ? '#f39c12' : 'grey';
             $combined = $data->combine([$activity->id, $activity->name, $activity->from, $activity->to, $color, $color, $activity->isLecture ]);
             $result->push($combined);
-            if(Auth::check() && isset($activity->notes) && $activity->isLecture) {
-                foreach($activity->notes as $n) {
-                    $color = Auth::user()->id === $n->created_by ? '#27ae60' : '#3498db';
-                    $title = Auth::user()->id === $n->created_by ? $n->name . ' (Yours)' : $n->name;
-                    $combined  = $data->combine([$n->id, $title, $n->from, $n->to, $color, $color, false ]);
-                    $result->push($combined);
-                }
+        }
+
+        if(Auth::check() && isset(Auth::user()->notes)) {
+            foreach(Auth::user()->notes as $n) {
+                $color = Auth::user()->id === $n->created_by ? '#27ae60' : '#3498db';
+                $title = Auth::user()->id === $n->created_by ? $n->name . ' (Yours)' : $n->name;
+                $combined  = $data->combine([$n->id, $title, $n->from, $n->to, $color, $color, false ]);
+                $result->push($combined);
             }
         }
+
         return $result;
     }
 

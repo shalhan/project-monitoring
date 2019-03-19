@@ -21,7 +21,7 @@ class ActivityController extends Controller
     {
         $result = $this->activity->getAllActivityCalendar();
         $notes = new Note();
-        $lectureNotes = Auth::check() ? $notes->getAllUserNotes(Auth::user()->id) : [];
+        $lectureNotes = Auth::check() ? $notes->getByCreatedBy(Auth::user()->id) : [];
         return view('pages.activity', compact(['result', 'lectureNotes']));
     }
     public function manageActivityView()

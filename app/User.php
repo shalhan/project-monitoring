@@ -46,4 +46,8 @@ class User extends Authenticatable
     public function activityCommittees() {
         return $this->hasMany('App\ActivityCommittee');
     }
+
+    public function notes() {
+        return $this->hasMany('App\Note', 'created_by');
+    }
 }

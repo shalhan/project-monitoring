@@ -61,18 +61,14 @@
           <table class="table table-bordered">
                 <tr>
                   <th>Catatan</th>
-                  <th>Aktivitas</th>
-                  <th>Oleh</th>
+                  <th>Mulai</th>
                   <th style="width: 40px">Aksi</th>
                 </tr>
                 @foreach($lectureNotes as $note)
                 <tr>
                   <td>{{$note->name}}</td>
                   <td>
-                    {{$note->activity->name}}
-                  </td>
-                  <td>
-                  {{$note->createdBy->name}}
+                    {{$note->startTimeRemaining}}
                   </td>
                   <td class="text-center">
                   @if($note->created_by === Auth::user()->id)
@@ -97,22 +93,6 @@
           <form role="form" action="{{route('createNote')}}" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="box-body">
-            <div class="form-group">
-                <label>Dari Aktivitas :</label>
-                <select class="form-control select2 {{ $errors->has('activity_id') ? ' is-invalid' : '' }}" name="activity_id" style="width: 100%;">
-                <option value="" selected disabled>Pilih aktivitas</option>
-                @foreach($result as $r)
-                @if($r['isLecture'])
-                <option value="{{$r['id']}}" {{old('activity_id') == $r['id'] ? 'selected' : ''}}>{{$r['title']}}</option>
-                @endif
-                @endforeach
-                </select>
-                @if ($errors->has('activity_id'))
-                    <span class="invalid-feedback" role="alert">
-                        <strong>{{ $errors->first('activity_id') }}</strong>
-                    </span>
-                @endif
-            </div>
                 <div class="form-group">
                     <label for="name">Nama Notes</label>
                     <input type="text" class="form-control {{ $errors->has('name') ? ' is-invalid' : '' }}" id="name" name="name" placeholder="Masukkan Nama Notes" value="{{old('name')}}" autocomplete="off">

@@ -5,10 +5,11 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Auth;
 use App\ActivityCommittee;
+use Carbon\Carbon;
 
 class Note extends Model
 {
-    protected $fillable = ['name', 'from', 'to', 'created_by', 'activity_id'];
+    protected $fillable = ['name', 'from', 'to', 'created_by'];
 
     public function create($data) {
         if(Auth::check()) {
@@ -16,7 +17,6 @@ class Note extends Model
             $this->from = $data['fromDateTime'];
             $this->to = $data['toDateTime'];
             $this->created_by = Auth::user()->id;
-            $this->activity_id = $data['activity_id'];
             $this->save();
         }
     }
@@ -32,25 +32,8 @@ class Note extends Model
     public function getByCreatedBy($createdId) {
         return $this->where('created_by', $createdId)
                     ->with(['activity','createdBy'])
-                    ->orderBy('created_at', 'asc')
+                    ->orderBy('from', 'asc')
                     ->get();
-    }
-
-    public function getByActivityIds($activityIds) {
-        return $this->whereIn("activity_id", $activityIds)
-                    ->with(['activity','createdBy'])
-                    ->orderBy('created_at', 'asc')
-                    ->get();
-    }
-
-    public function getAllUserNotes($userId) {
-        $ac = new ActivityCommittee();
-        $userActivities = $ac->getByUserId($userId);
-        $activityIds = collect();
-        foreach($userActivities as $userActivity) {
-            $activityIds->push($userActivity->activity_id);
-        }
-        return $this->getByActivityIds($activityIds);
     }
 
     public function activity() {
@@ -59,5 +42,10 @@ class Note extends Model
 
     public function createdBy() {
         return $this->belongsTo('App\User', 'created_by', 'id');
+    }
+
+    public function getStartTimeRemainingAttribute() {
+        $now = Carbon::now();
+        return $now->diffForHumans($this->from);
     }
 }

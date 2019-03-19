@@ -24,7 +24,6 @@ class NoteController extends Controller
                 'dateTo.required' => 'Tanggal berakhir notes harus diisi',
                 'dateTo.after_or_equal:date' => 'Tanggal harus lebih besar dari tanggal mulai',
                 'timeTo.required' => 'Waktu berakhir notes harus diisi',
-                'activity_id.required' => 'Aktivitas harus dipilih'
             ];
             $validator = Validator::make($req->all(), [
                 'name' => 'required',
@@ -32,7 +31,6 @@ class NoteController extends Controller
                 'timeFrom' => 'required',
                 'dateTo' => 'required|after_or_equal:date:dateFrom',
                 'timeTo' => 'required',
-                'activity_id' => 'required'
             ], $messages);
             if ($validator->fails()) {
                 return redirect('/rincian-kegiatan')
@@ -49,7 +47,6 @@ class NoteController extends Controller
                 'name' => $req->name,
                 'fromDateTime' => $fromDateTime,
                 'toDateTime' => $toDateTime,
-                'activity_id' => $req->activity_id
             ];
 
             $this->notes->create($data);
