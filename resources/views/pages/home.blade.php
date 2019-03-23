@@ -59,6 +59,7 @@
         m    = date.getMonth(),
         y    = date.getFullYear()
     $('#calendar').fullCalendar({
+      lang: "id",
       header    : {
         left  : 'prev,next today',
         center: 'title',

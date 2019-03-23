@@ -4,6 +4,12 @@
 <link rel="stylesheet" href="plugins/timepicker/bootstrap-timepicker.min.css">
 <link rel="stylesheet" href="bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css">
 <link rel="stylesheet" href="bower_components/select2/dist/css/select2.min.css">
+<style>
+  .end {
+    color: rgba(0,0,0,0.2) !important;
+    background: #f3f3f3 !important;
+  }
+</style>
 @endpush
 
 @push('script')
@@ -53,39 +59,6 @@
   <div class="row">
       @if(Auth::check() && Auth::user()->type_id === Config::get('user.lecture_id'))
       <div class="col-md-4">
-      <div class="box box-primary">
-          <div class="box-header with-border">
-              <h3 class="box-title">Catatan</h3>
-          </div>
-          <div class="box-body">
-          <table class="table table-bordered">
-                <tr>
-                  <th>Catatan</th>
-                  <th>Mulai</th>
-                  <th style="width: 40px">Aksi</th>
-                </tr>
-                @foreach($lectureNotes as $note)
-                <tr>
-                  <td>{{$note->name}}</td>
-                  <td>
-                    {{$note->startTimeRemaining}}
-                  </td>
-                  <td class="text-center">
-                  @if($note->created_by === Auth::user()->id)
-                  <form action="/note/{{$note->id}}" method="post">
-                    @method('DELETE')
-                    @csrf
-                    <label for="deleteNote{{$note->id}}"><i class="fa fa-trash text-red"></i></label>
-                    <button class="btn btn-warning hidden" type="submit" id="deleteNote{{$note->id}}">Delete</button>
-                  </form>
-                  @endif
-                  </td>
-                </tr>
-                @endforeach
-              </table>
-          </div>
-
-        </div>
         <div class="box box-primary">
           <div class="box-header with-border">
               <h3 class="box-title">Notes</h3>
@@ -103,6 +76,15 @@
                     @endif
                 </div>
                 <div class="form-group">
+                    <label for="name">Lokasi</label>
+                    <input type="text" class="form-control {{ $errors->has('location') ? ' is-invalid' : '' }}" id="place" name="location" placeholder="Masukkan Lokasi" value="{{old('location')}}">
+                    @if ($errors->has('location'))
+                        <span class="invalid-feedback" role="alert">
+                            <strong>{{ $errors->first('location') }}</strong>
+                        </span>
+                    @endif
+                </div>
+                <div class="form-group">
                     <label>Dari Tanggal:</label>
 
                     <div class="input-group">
@@ -110,7 +92,7 @@
                             <i class="fa fa-calendar"></i>
                         </div>
                         <input type="text" class="form-control pull-right {{ $errors->has('dateFrom') ? ' is-invalid' : '' }}" name="dateFrom" id="dateFrom" value="{{old('date')}}" autocomplete="off">
-                        <input type="text" class="form-control timepicker {{ $errors->has('timeFrom') ? ' is-invalid' : '' }}" name="timeFrom" id="timeFrom" value="{{old('time')}}" autocomplete="off">
+                        <input type="text" class="form-control timepicker {{ $errors->has('timeFrom') || $errors->has('dateFrom') ? ' is-invalid' : '' }}" name="timeFrom" id="timeFrom" value="{{old('time')}}" autocomplete="off">
                     </div>
                     @if ($errors->has('dateFrom'))
                         <span class="invalid-feedback" role="alert">
@@ -132,7 +114,7 @@
                             <i class="fa fa-calendar"></i>
                         </div>
                         <input type="text" class="form-control pull-right {{ $errors->has('dateTo') ? ' is-invalid' : '' }}" name="dateTo" id="dateTo" value="{{old('date')}}" autocomplete="off">
-                        <input type="text" class="form-control timepicker {{ $errors->has('timeTo') ? ' is-invalid' : '' }}" name="timeTo" id="timeTo" value="{{old('time')}}" autocomplete="off">
+                        <input type="text" class="form-control timepicker {{ $errors->has('timeTo') || $errors->has('dateTo') ? ' is-invalid' : '' }}" name="timeTo" id="timeTo" value="{{old('time')}}" autocomplete="off">
                     </div>
                     @if ($errors->has('dateTo'))
                         <span class="invalid-feedback" role="alert">
@@ -151,6 +133,41 @@
             <button type="submit" class="btn btn-primary">Tambah</button>
             </div>
           </form>
+
+        </div>
+        <div class="box box-primary">
+          <div class="box-header with-border">
+              <h3 class="box-title">Catatan</h3>
+          </div>
+          <div class="box-body">
+            <table class="table table-bordered">
+                <tr>
+                  <th>Catatan</th>
+                  <th>Lokasi</th>
+                  <th>Mulai</th>
+                  <th style="width: 40px">Aksi</th>
+                </tr>
+                @foreach($lectureNotes as $note)
+                <tr class="{{$note->isEnd ? 'end' : ''}}">
+                  <td>{{$note->name}}</td>
+                  <td>{{$note->location ? $note->location : "-"}}</td>
+                  <td>
+                    {{$note->startTimeRemaining}}
+                  </td>
+                  <td class="text-center">
+                  @if($note->created_by === Auth::user()->id)
+                  <form action="/note/{{$note->id}}" method="post">
+                    @method('DELETE')
+                    @csrf
+                    <label for="deleteNote{{$note->id}}"><i class="fa fa-trash text-red"></i></label>
+                    <button class="btn btn-warning hidden" type="submit" id="deleteNote{{$note->id}}">Delete</button>
+                  </form>
+                  @endif
+                  </td>
+                </tr>
+                @endforeach
+              </table>
+          </div>
 
         </div>
       </div>
@@ -210,6 +227,7 @@
         m    = date.getMonth(),
         y    = date.getFullYear()
     $('#calendar').fullCalendar({
+      lang: 'id',
       eventClick: function(calEvent, jsEvent, view) {
         $("#modal-default").modal("show")
       },

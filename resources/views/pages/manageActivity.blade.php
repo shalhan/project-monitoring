@@ -68,7 +68,7 @@
                             <i class="fa fa-calendar"></i>
                         </div>
                         <input type="text" class="form-control pull-right {{ $errors->has('dateFrom') ? ' is-invalid' : '' }}" name="dateFrom" id="dateFrom" value="{{old('date')}}" autocomplete="off">
-                        <input type="text" class="form-control timepicker {{ $errors->has('timeFrom') ? ' is-invalid' : '' }}" name="timeFrom" id="timeFrom" value="{{old('time')}}" autocomplete="off">
+                        <input type="text" class="form-control timepicker {{ $errors->has('timeFrom') || $errors->has('dateFrom') ? ' is-invalid' : '' }}" name="timeFrom" id="timeFrom" value="{{old('time')}}" autocomplete="off">
                     </div>
                     @if ($errors->has('dateFrom'))
                         <span class="invalid-feedback" role="alert">
@@ -90,7 +90,7 @@
                             <i class="fa fa-calendar"></i>
                         </div>
                         <input type="text" class="form-control pull-right {{ $errors->has('dateTo') ? ' is-invalid' : '' }}" name="dateTo" id="dateTo" value="{{old('date')}}" autocomplete="off">
-                        <input type="text" class="form-control timepicker {{ $errors->has('timeTo') ? ' is-invalid' : '' }}" name="timeTo" id="timeTo" value="{{old('time')}}" autocomplete="off">
+                        <input type="text" class="form-control timepicker {{ $errors->has('timeTo') || $errors->has('dateTo') ? ' is-invalid' : '' }}" name="timeTo" id="timeTo" value="{{old('time')}}" autocomplete="off">
                     </div>
                     @if ($errors->has('dateTo'))
                         <span class="invalid-feedback" role="alert">
@@ -155,7 +155,7 @@
     var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
     var yyyy = today.getFullYear();
 
-    today = dd + '/' + mm + '/' + yyyy;
+    today = mm + '/' + dd + '/' + yyyy;
     $('#dateFrom').datepicker({
       autoclose: true
     }).val(today).datepicker('update');
