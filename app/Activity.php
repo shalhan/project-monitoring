@@ -6,38 +6,74 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use App\ActivityCommittee;
 use Auth;
+use Carbon\Carbon;
+
 
 class Activity extends Model
 {
-    protected $appends = ['isLecture'];
     protected $fillable = ['name', 'location', 'from', 'to', 'user_id', 'file'];
 
-    public function getAll() {
-        return $this->select('id', 'name', 'from', 'to')
+    public function getById($id) {
+        return $this->find($id);
+    }
+
+    public function getAll($status = 'all') {
+        return $this->select('id', 'name', 'from', 'to', 'location')
+                    ->where(function($query) use ($status) {
+                        if($status === 'upcoming')
+                        $syntax = '>=';
+                        else if($status === 'end')
+                            $syntax = '<';
+                        else
+                            return;
+                        $query->where('from', $syntax, date('Y-m-s H:i:s'));
+                    })
                     ->with('activityCommittees')
+                    ->orderBy('from', 'asc')
                     ->get();
     }
 
-    public function create($data) {
-        $this->name = $data['name'];
-        $this->location = $data['location'];
-        $this->from = $data['fromDateTime'];
-        $this->to = $data['toDateTime'];
-        $this->save();
+    public function getAllLectureActivities() {
+        $activitiesUpcoming = $this->getAll('upcoming');
+        $activitiesEnd = $this->getAll('end');
+        
+        if($activitiesEnd) 
+            $merged = $activitiesUpcoming->merge($activitiesEnd);
+        else
+            $merged = $activitiesUpcoming;
+            
+        return $merged;
+    }
+
+
+    public function createOrUpdate($data) {
+        $activity = $this->updateOrCreate(
+            [ 'id' => $data['id'] ],
+            [
+                'name'=> $data['name'],
+                'location' => $data['location'],
+                'from' => $data['fromDateTime'],
+                'to' => $data['toDateTime'],
+            ]
+        );
+
         //tambah panitia
+        $activityCommittee = new ActivityCommittee;
+        $activityCommittee->dropByActivityId($activity->id);
         foreach($data['user_id'] as $id) {
-            $activityCommittee = new ActivityCommittee();
+            $activityCommittee = new ActivityCommittee;
             $activityCommittee->user_id = $id;
-            $activityCommittee->activity_id = $this->id;
+            $activityCommittee->activity_id = $activity->id;
             $activityCommittee->save();
         }
+        
         //tambah file
         if(isset($data['file']))
         {
-            $filePath  = 'activity_files/' . $this->id . '/' . date("YmdHis") . '.' . $data['file']->getClientOriginalExtension();
+            $filePath  = 'activity_files/' . $activity->id . '/' . date("YmdHis") . '.' . $data['file']->getClientOriginalExtension();
             Storage::putFileAs('', $data['file'], $filePath);
-            $this->file = $filePath;
-            $this->update();
+            $activity->file = $filePath;
+            $activity->update();
         }
     }
 
@@ -67,6 +103,17 @@ class Activity extends Model
         return $this->hasMany('App\ActivityCommittee')->select('user_id', 'activity_id')->with('user');
     }
 
+    public function getActivityCommitteeIdsAttribute() {
+        $result = [];
+        if($this->activityCommittees) {
+            foreach($this->activityCommittees as $committee) {
+                array_push($result, $committee->user->id);
+            }
+        }
+
+        return $result;
+    }
+
     public function getIsLectureAttribute() {
         if(!Auth::check())
             return false;
@@ -80,5 +127,40 @@ class Activity extends Model
 
     public function notes() {
         return $this->hasMany('App\Note');
+    }
+
+    public function drop($id) {
+        if(Auth::check()) {
+            $note = $this->find($id);
+            $note->delete();
+        }
+    }
+
+    public function getIsEndAttribute() {
+        if(strtotime($this->from) < strtotime(date('Y-m-d H:i:s')))
+            return true;
+        else
+            return false;
+    }
+
+    public function getStartTimeAttribute() {
+        return date('F d, Y | H:i', strtotime($this->from)) . ' WIB';
+    }
+
+    public function fromDate($format = "Y-m-d") {
+        return date($format,strtotime(explode(" ", $this->from)[0]));
+    }
+
+
+    public function fromTime($format = "H:i:s") {
+        return date($format, strtotime(explode(" ", $this->from)[1]));
+    }
+
+    public function toDate($format = "Y-m-d") {
+        return date($format,strtotime(explode(" ", $this->to)[0]));
+    }
+
+    public function toTime($format = "H:i:s") {
+        return date($format, strtotime(explode(" ", $this->to)[1]));
     }
 }

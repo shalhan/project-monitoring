@@ -11,15 +11,21 @@ class Note extends Model
 {
     protected $fillable = ['name', 'from', 'to', 'created_by', 'location'];
 
-    public function create($data) {
-        if(Auth::check()) {
-            $this->name = $data['name'];
-            $this->from = $data['fromDateTime'];
-            $this->to = $data['toDateTime'];
-            $this->created_by = Auth::user()->id;
-            $this->location = $data['location'];
-            $this->save();
-        }
+    public function getById($id) {
+        return $this->find($id);
+    }
+
+    public function createOrUpdate($data) {
+        $activity = $this->updateOrCreate(
+            [ 'id' => $data['id'] ],
+            [
+                'name'=> $data['name'],
+                'location' => $data['location'],
+                'from' => $data['fromDateTime'],
+                'to' => $data['toDateTime'],
+                'created_by' => Auth::user()->id
+            ]
+        );
     }
 
     public function drop($id) {
@@ -58,7 +64,6 @@ class Note extends Model
             }
         }
 
-
         return $notesUpcoming;
     }
 
@@ -70,29 +75,31 @@ class Note extends Model
         return $this->belongsTo('App\User', 'created_by', 'id');
     }
 
-    public function getStartTimeRemainingAttribute() {
-        $boringLanguage = 'en_Custom';
-        $translator = \Carbon\Translator::get($boringLanguage);
-        $translator->setTranslations([
-            'second' => ':count detik |:count detik',
-            'minute' => ':count menit |:count menit',
-            'hour' => ':count jam |:count jam',
-            'day' => ':count hari |:count hari',
-            'month' => ':count bulan |:count bulan',
-            'year' => ':count tahun |:count tahun',
-        ]);
+    public function getStartTimeAttribute() {
+        // $boringLanguage = 'en_Custom';
+        // $translator = \Carbon\Translator::get($boringLanguage);
+        // $translator->setTranslations([
+        //     'second' => ':count detik |:count detik',
+        //     'minute' => ':count menit |:count menit',
+        //     'hour' => ':count jam |:count jam',
+        //     'day' => ':count hari |:count hari',
+        //     'month' => ':count bulan |:count bulan',
+        //     'year' => ':count tahun |:count tahun',
+        // ]);
 
-        $translator->setTranslations([
-            'before' => function ($time) {
-                return $time . ' lagi';
-            },
-            'after' => function ($time) {
-                return $time . ' yang lalu';
-            },
-        ]);
+        // $translator->setTranslations([
+        //     'before' => function ($time) {
+        //         return $time . ' lagi';
+        //     },
+        //     'after' => function ($time) {
+        //         return $time . ' yang lalu';
+        //     },
+        // ]);
         
-        $now = Carbon::now( new \DateTimeZone('Asia/Jakarta'));
-        return $now->locale($boringLanguage)->diffForHumans($this->from);
+        // $now = Carbon::now( new \DateTimeZone('Asia/Jakarta'));
+        // return $now->locale($boringLanguage)->diffForHumans($this->from);
+        return date('F d, Y | H:i', strtotime($this->from)) . ' WIB';
+
     }
 
     public function getIsEndAttribute() {
@@ -100,5 +107,22 @@ class Note extends Model
             return true;
         else
             return false;
+    }
+
+    public function fromDate($format = "Y-m-d") {
+        return date($format,strtotime(explode(" ", $this->from)[0]));
+    }
+
+
+    public function fromTime($format = "H:i:s") {
+        return date($format, strtotime(explode(" ", $this->from)[1]));
+    }
+
+    public function toDate($format = "Y-m-d") {
+        return date($format,strtotime(explode(" ", $this->to)[0]));
+    }
+
+    public function toTime($format = "H:i:s") {
+        return date($format, strtotime(explode(" ", $this->to)[1]));
     }
 }

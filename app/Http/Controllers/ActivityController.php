@@ -21,17 +21,22 @@ class ActivityController extends Controller
     public function activityView()
     {
         $result = $this->activity->getAllActivityCalendar();
-        $notes = new Note();
-        $lectureNotes = Auth::check() ? $notes->getByCreatedByWithStatus(Auth::user()->id) : [];
-        return view('pages.activity', compact(['result', 'lectureNotes']));
+        return view('pages.activity', compact(['result']));
     }
     public function manageActivityView()
     {
         $lectures = $this->user->getLectures();
-        return view('pages.manageActivity', compact('lectures'));
+        $activities = $this->activity->getAllLectureActivities();
+        return view('pages.manageActivity', compact(['lectures','activities']));
     }
 
-    public function create(Request $req) {
+    public function updateActivityView($id) {      
+        $lectures = $this->user->getLectures();
+        $activity = $this->activity->getById($id);
+        return view('pages.updateActivity', compact(['lectures', 'activity']));
+    }
+
+    public function updateOrCreate($id = -99, Request $req) {
         try{
             $messages = [
                 'name.required' => 'Nama kegiatan harus diisi',
@@ -80,13 +85,14 @@ class ActivityController extends Controller
                 'user_id' => 'required',
                 // 'file' => 'nullable|mimes:jpeg,png|max:2000',
             ], $messages);
+
             if ($validator->fails()) {
                 return redirect('/tambah-kegiatan')
                             ->withErrors($validator)
                             ->withInput();
             }
-            
             $data = [
+                'id' => $id,
                 'name' => $req->name,
                 'location' => $req->location,
                 'fromDateTime' => $fromDateTime,
@@ -94,11 +100,19 @@ class ActivityController extends Controller
                 'file' => $req->file,
                 'user_id' => $req->user_id
             ];
-            $this->activity->create($data);
+            $this->activity->createOrUpdate($data);
             return redirect()->back()->with('success', 'Menambahkan aktivitas berhasil');
-
         }
         catch(\Exception $e) {
+            \Log::info($e->getMessage() . ' : ' . $e->getLine() . ' : ' . $e->getFile());
+        }
+    }
+
+    public function drop($id) {
+        try {
+            $this->activity->drop($id);
+            return redirect()->back();
+        }catch(\Exception $e) {
             \Log::info($e->getMessage());
         }
     }

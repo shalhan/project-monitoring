@@ -2,10 +2,10 @@
 
 @push("style")
 <!-- daterange picker -->
-<link rel="stylesheet" href="plugins/timepicker/bootstrap-timepicker.min.css">
-<link rel="stylesheet" href="bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css">
+<link rel="stylesheet" href="/plugins/timepicker/bootstrap-timepicker.min.css">
+<link rel="stylesheet" href="/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css">
 <!-- <link rel="stylesheet" href="bower_components/bootstrap-daterangepicker/daterangepicker.css"> -->
-<link rel="stylesheet" href="bower_components/select2/dist/css/select2.min.css">
+<link rel="stylesheet" href="/bower_components/select2/dist/css/select2.min.css">
 <style>
   .end {
     color: rgba(0,0,0,0.2) !important;
@@ -43,12 +43,13 @@
                         {{session('success')}}
                     @endcomponent
                 @endif
-                <form role="form" action="{{route('createActivity', ['id' => -99] )}}" method="POST" enctype="multipart/form-data">
+                <form role="form" action="{{route('updateActivity', ['id' => $activity->id])}}" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="_method" value="PUT">
                     @csrf
                     <div class="box-body">
                         <div class="form-group">
                             <label for="name">Nama Kegiatan</label>
-                            <input type="text" class="form-control {{ $errors->has('name') ? ' is-invalid' : '' }}" id="name" name="name" placeholder="Masukkan Nama Kegiatan" value="{{old('name')}}">
+                            <input type="text" class="form-control {{ $errors->has('name') ? ' is-invalid' : '' }}" id="name" name="name" placeholder="Masukkan Nama Kegiatan" value="{{$activity->name}}">
                             @if ($errors->has('name'))
                                 <span class="invalid-feedback" role="alert">
                                     <strong>{{ $errors->first('name') }}</strong>
@@ -57,7 +58,7 @@
                         </div>
                         <div class="form-group">
                             <label for="place">Lokasi / Tempat</label>
-                            <input type="text" class="form-control {{ $errors->has('location') ? ' is-invalid' : '' }}" id="place" name="location" placeholder="Masukkan Lokasi Kegiatan" value="{{old('location')}}">
+                            <input type="text" class="form-control {{ $errors->has('location') ? ' is-invalid' : '' }}" id="place" name="location" placeholder="Masukkan Lokasi Kegiatan" value="{{$activity->location}}">
                             @if ($errors->has('location'))
                                 <span class="invalid-feedback" role="alert">
                                     <strong>{{ $errors->first('location') }}</strong>
@@ -72,8 +73,8 @@
                                 <div class="input-group-addon">
                                     <i class="fa fa-calendar"></i>
                                 </div>
-                                <input type="text" class="form-control pull-right {{ $errors->has('dateFrom') ? ' is-invalid' : '' }}" name="dateFrom" id="dateFrom" value="{{old('date')}}" autocomplete="off">
-                                <input type="text" class="form-control timepicker {{ $errors->has('timeFrom') || $errors->has('dateFrom') ? ' is-invalid' : '' }}" name="timeFrom" id="timeFrom" value="{{old('time')}}" autocomplete="off">
+                                <input type="text" class="form-control pull-right {{ $errors->has('dateFrom') ? ' is-invalid' : '' }}" name="dateFrom" id="dateFrom" value="{{$activity->fromDate('m/d/Y')}}" autocomplete="off">
+                                <input type="text" class="form-control timepicker {{ $errors->has('timeFrom') || $errors->has('dateFrom') ? ' is-invalid' : '' }}" name="timeFrom" id="timeFrom" value="{{$activity->fromTime('h:i A')}}" autocomplete="off">
                             </div>
                             @if ($errors->has('dateFrom'))
                                 <span class="invalid-feedback" role="alert">
@@ -94,8 +95,8 @@
                                 <div class="input-group-addon">
                                     <i class="fa fa-calendar"></i>
                                 </div>
-                                <input type="text" class="form-control pull-right {{ $errors->has('dateTo') ? ' is-invalid' : '' }}" name="dateTo" id="dateTo" value="{{old('date')}}" autocomplete="off">
-                                <input type="text" class="form-control timepicker {{ $errors->has('timeTo') || $errors->has('dateTo') ? ' is-invalid' : '' }}" name="timeTo" id="timeTo" value="{{old('time')}}" autocomplete="off">
+                                <input type="text" class="form-control pull-right {{ $errors->has('dateTo') ? ' is-invalid' : '' }}" name="dateTo" id="dateTo" value="{{$activity->toDate('m/d/Y')}}" autocomplete="off">
+                                <input type="text" class="form-control timepicker {{ $errors->has('timeTo') || $errors->has('dateTo') ? ' is-invalid' : '' }}" name="timeTo" id="timeTo" value="{{$activity->toTime('h:i A')}}" autocomplete="off">
                             </div>
                             @if ($errors->has('dateTo'))
                                 <span class="invalid-feedback" role="alert">
@@ -113,7 +114,7 @@
                             <label>Pilih Panitia :</label>
                             <select class="form-control select2 {{ $errors->has('chief_id') ? ' is-invalid' : '' }}" multiple="multiple" name="user_id[]" style="width: 100%;">
                             @foreach($lectures as $lecture)
-                            <option value="{{$lecture->id}}" {{old('chief_id') == $lecture->id ? 'selected' : ''}}>{{$lecture->name}}</option>
+                            <option value="{{$lecture->id}}" {{in_array($lecture->id, $activity->activityCommitteeIds) ? 'selected' : ''}}>{{$lecture->name}}</option>
                             @endforeach
                             </select>
                             @if ($errors->has('chief_id'))
@@ -136,53 +137,9 @@
                     <!-- /.box-body -->
 
                     <div class="box-footer">
-                    <button type="submit" class="btn btn-primary">Tambah</button>
+                    <button type="submit" class="btn btn-primary">Ubah</button>
                     </div>
                 </form>
-            </div>
-        </div>
-        <div class="col-md-8">
-            <div class="box box-primary">
-                <div class="box-header with-border">
-                    <h3 class="box-title">Kegiatan</h3>
-                </div>
-                <div class="box-body">
-                <table class="table table-bordered">
-                    <tr>
-                        <th>Kegiatan</th>
-                        <th>Lokasi</th>
-                        <th>Mulai</th>
-                        <th>Panitia</th>
-                        <th style="width: 40px">Aksi</th>
-                    </tr>
-                    @foreach($activities as $activity)
-                    <tr class="{{$activity->isEnd ? 'end' : ''}}">
-                        <td>{{$activity->name}}</td>
-                        <td>{{$activity->location ? $activity->location : "-"}}</td>
-                        <td>
-                        {{$activity->startTime}}
-                        </td>
-                        <td>
-                            @foreach($activity->activityCommittees as $committee)
-                            <ul>
-                                <li>{{$committee->user->name}}</li>
-                            </ul>
-                            @endforeach
-                        </td>
-                        <td class="text-center">
-                            <a href="{{route('updateActivityView', ['id' => $activity->id])}}"><i class="fa fa-pencil"></i></a>
-                            <form action="{{route('deleteActivity', ['id'=>$activity->id])}}" method="post">
-                                @method('DELETE')
-                                @csrf
-                                <label for="deleteActivity{{$activity->id}}"><i class="fa fa-trash text-red"></i></label>
-                                <button class="btn btn-warning hidden" type="submit" id="deleteActivity{{$activity->id}}">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                    @endforeach
-                    </table>
-                </div>
-
             </div>
         </div>
     </div>
@@ -190,31 +147,25 @@
 @endsection
 
 @push("script")
-<script src="bower_components/select2/dist/js/select2.full.min.js"></script>
-<script src="plugins/timepicker/bootstrap-timepicker.min.js"></script>
-<script src="bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
+<script src="/bower_components/select2/dist/js/select2.full.min.js"></script>
+<script src="/plugins/timepicker/bootstrap-timepicker.min.js"></script>
+<script src="/bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
 <!-- <script src="bower_components/bootstrap-daterangepicker/daterangepicker.js"></script> -->
 <script>
   $(function () {
     $('.select2').select2()
     // $('#scheduleFrom').daterangepicker()
     // $('#schedule').daterangepicker({ timePicker: true, timePickerIncrement: 30, format: 'MM/DD/YYYY h:mm A' })
-    var today = new Date();
-    var dd = String(today.getDate()).padStart(2, '0');
-    var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
-    var yyyy = today.getFullYear();
-
-    today = mm + '/' + dd + '/' + yyyy;
     $('#dateFrom').datepicker({
       autoclose: true
-    }).val(today).datepicker('update');
+    });
     //Timepicker
     $('#timeFrom').timepicker({
         showInputs: false
     })
     $('#dateTo').datepicker({
       autoclose: true
-    }).val(today).datepicker('update');
+    });
     //Timepicker
     $('#timeTo').timepicker({
         showInputs: false

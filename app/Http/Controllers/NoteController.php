@@ -7,6 +7,7 @@ use App\Note;
 use App\User;
 use Validator;
 use Carbon\Carbon;
+use Auth;
 
 class NoteController extends Controller
 {
@@ -16,7 +17,17 @@ class NoteController extends Controller
         $this->user = new User();
     }
 
-    public function create(Request $req) {
+    public function noteView() {
+        $lectureNotes = Auth::check() ? $this->notes->getByCreatedByWithStatus(Auth::user()->id) : [];
+        return view('pages.manageNote', compact(['lectureNotes']));
+    }
+
+    public function updateNoteView($id) {
+        $note = $this->notes->getById($id);
+        return view('pages.updateNote', compact('note'));
+    }
+
+    public function updateOrCreate($id = -99, Request $req) {
         try {
             $messages = [
                 'name.required' => 'Nama notes harus diisi',
@@ -59,7 +70,7 @@ class NoteController extends Controller
                 'timeTo' => 'required',
             ], $messages);
             if ($validator->fails()) {
-                return redirect('/rincian-kegiatan')
+                return redirect()->back()
                             ->withErrors($validator)
                             ->withInput();
             }
@@ -67,13 +78,14 @@ class NoteController extends Controller
            
             
             $data = [
+                'id' => $id,
                 'name' => $req->name,
                 'fromDateTime' => $fromDateTime,
                 'toDateTime' => $toDateTime,
                 'location' => $req->location
             ];
 
-            $this->notes->create($data);
+            $this->notes->createOrUpdate($data);
             return redirect()->back()->with('success', 'Menambahkan notes berhasil');
         }catch(\Exception $e) {
             \Log::info($e->getMessage() . " : " . $e->getFile() . " : " . $e->getLine());
