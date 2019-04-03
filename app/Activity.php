@@ -83,14 +83,20 @@ class Activity extends Model
         $result = collect();
         foreach($activities as $activity) {
             $color = $activity->isLecture ? '#f39c12' : 'grey';
-            $combined = $data->combine([$activity->id, $activity->name, $activity->from, $activity->to, $color, $color, $activity->isLecture ]);
+            $userCodeName = '';
+            $length = count($activity->activityCommittees);
+            foreach($activity->activityCommittees as $key => $committee) {
+                $seperator = (int) $length-1 === $key ? '' : ', ';
+                $userCodeName .= $committee->user->code_name . $seperator;
+            }
+            $combined = $data->combine([$activity->id, $activity->name . ' (' . $userCodeName . ')', $activity->from, $activity->to, $color, $color, $activity->isLecture ]);
             $result->push($combined);
         }
 
         if(Auth::check() && isset(Auth::user()->notes)) {
             foreach(Auth::user()->notes as $n) {
                 $color = Auth::user()->id === $n->created_by ? '#27ae60' : '#3498db';
-                $title = Auth::user()->id === $n->created_by ? $n->name . ' (Yours)' : $n->name;
+                $title = Auth::user()->id === $n->created_by ? $n->name . ' (Catatan anda)' : $n->name;
                 $combined  = $data->combine([$n->id, $title, $n->from, $n->to, $color, $color, false ]);
                 $result->push($combined);
             }

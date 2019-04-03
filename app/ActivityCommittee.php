@@ -14,7 +14,7 @@ class ActivityCommittee extends Model
     }
 
     public function user() {
-        return $this->belongsTo('App\User')->select('id', 'name', 'type_id');
+        return $this->belongsTo('App\User')->select('id', 'name', 'type_id', 'code_name');
     }
 
     public function getByUserId($userId) {
