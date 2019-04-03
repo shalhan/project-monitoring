@@ -87,7 +87,7 @@ class ActivityController extends Controller
             ], $messages);
 
             if ($validator->fails()) {
-                return redirect('/tambah-kegiatan')
+                return redirect('/kelola-kegiatan')
                             ->withErrors($validator)
                             ->withInput();
             }

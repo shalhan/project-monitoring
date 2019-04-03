@@ -7,7 +7,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>AdminLTE 2 | Starter</title>
+  <title>Project Monitoring</title>
+  <link rel="shortcut icon" href="/img/logo.ico">
   <!-- Tell the browser to be responsive to screen width -->
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
   @include("style")
@@ -58,7 +59,7 @@ desired effect
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="/">Brand</a>
+            <a class="navbar-brand" href="/" style="display: flex; width: 75px;"><img style="width:100%; align-self:center;s" src="/img/logo.png"></a>
             </div>
 
             <ul class="nav navbar-nav navbar-right mr-1per">
