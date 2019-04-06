@@ -206,14 +206,22 @@
 
     today = mm + '/' + dd + '/' + yyyy;
     $('#dateFrom').datepicker({
-      autoclose: true
+      autoclose: true,
+      startDate: today,
     }).val(today).datepicker('update');
+    //onchange date picker
+    $('#dateFrom').change(()=>{
+        if($("#dateFrom").val() > $("#dateTo").val())
+            $('#dateTo').val($("#dateFrom").val()).datepicker('update');
+        $('#dateTo').datepicker("setStartDate", $("#dateFrom").val())
+    });
     //Timepicker
     $('#timeFrom').timepicker({
         showInputs: false
     })
     $('#dateTo').datepicker({
-      autoclose: true
+      autoclose: true,
+      startDate: $("#dateFrom").val()
     }).val(today).datepicker('update');
     //Timepicker
     $('#timeTo').timepicker({
