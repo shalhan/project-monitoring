@@ -25,6 +25,29 @@
           </div>
       <!-- /. box -->
       </div>
+      <div class="col-md-4">
+          <div class="box box-primary">
+              <div class="box-body no-padding">
+                @if(Auth::user()->type_id != 1)
+                <div class="flex">
+                    <div class="strip strip--green"></div> <span class="text-center"> Catatan Pribadi</span>
+                </div>
+                <div class="flex">
+                  <div class="strip strip--orange"></div> <span class="text-center"> Jadwal Kegiatan Anda</span>
+                </div>
+                <div class="flex">
+                    <div class="strip strip--black"></div> <span class="text-center"> Jadwal Kegiatan Lainnya</span>
+                </div>
+                @else
+                <div class="flex">
+                    <div class="strip strip--black"></div> <span class="text-center"> Jadwal Kegiatan Dosen</span>
+                </div>
+                @endif
+              </div>
+              <!-- /.box-body -->
+          </div>
+      <!-- /. box -->
+      </div>
       <!-- /.col -->
   </div>
 <!-- /.row -->
@@ -71,7 +94,20 @@
     $('#calendar').fullCalendar({
       lang: 'id',
       eventClick: function(calEvent, jsEvent, view) {
-        $("#modal-default").modal("show")
+        console.dir(calEvent)
+        var events = calEvent.source.rawEventDefs
+        var listActivityEl = document.getElementById("listActivity")
+        listActivityEl.firstChild.remove()
+        setTimeout(()=>{
+          for(let index in events) {
+            if (events[index].id === calEvent.id) {
+              var list = document.createElement("li")
+              list.innerHTML = events[index].title
+              listActivityEl.appendChild(list)
+            }
+          }
+        },500)
+        $("#calendarModal").modal("show")
       },
       header    : {
         left  : 'prev,next today',

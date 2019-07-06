@@ -17,3 +17,31 @@
 .form-control.is-invalid {
     border: 1px solid red;
 }
+
+.text-center {
+    align-self: center;
+}
+
+.flex {
+    display: flex;
+}
+
+.strip {
+    width: 30px;
+    height: 10px;
+    background-color: black;
+    margin: 10px;
+    align-self: center;
+}
+
+.strip--black {
+    background-color: #808080;
+}
+
+.strip--orange {
+    background-color: #f39c12;
+}
+
+.strip--green {
+    background-color: #26ae60;
+}
