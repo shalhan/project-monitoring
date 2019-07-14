@@ -94,15 +94,30 @@
     $('#calendar').fullCalendar({
       lang: 'id',
       eventClick: function(calEvent, jsEvent, view) {
-        console.dir(calEvent)
+        console.log(calEvent)
+        var startDate = calEvent.start.format('DD/MM/YYYY HH:mm A')
+        var endDate = calEvent.end.format('DD/MM/YYYY HH:mm A')
+        var location = calEvent.location
         var events = calEvent.source.rawEventDefs
         var listActivityEl = document.getElementById("listActivity")
-        listActivityEl.firstChild.remove()
+        listActivityEl.innerHTML = ''
         setTimeout(()=>{
           for(let index in events) {
             if (events[index].id === calEvent.id) {
+              var locationAttr = document.createElement("p") 
+              var startDateAttr = document.createElement("p")
+              var endDateAttr = document.createElement("p") 
+              var title = document.createElement("p") 
               var list = document.createElement("li")
+              locationAttr.innerHTML = "Lokasi : " + location
               list.innerHTML = events[index].title
+              startDateAttr.innerHTML = 'Mulai : ' + startDate
+              endDateAttr.innerHTML = 'Berakhir : ' + endDate
+              title.innerHTML = 'Kegiatan :'
+              listActivityEl.appendChild(locationAttr)
+              listActivityEl.appendChild(startDateAttr)
+              listActivityEl.appendChild(endDateAttr)
+              listActivityEl.appendChild(title)
               listActivityEl.appendChild(list)
             }
           }
